@@ -34,10 +34,10 @@ export default function App() {
   const guardarProducto = (e) => {
     e.preventDefault();
     if (editandoId) {
-      setProductos(productos.map(p => p.id === editandoId ? { ...p, ...formProd, stock: parseInt(formProd.stock), precioCoste: parseInt(formProd.precioCoste), precio: parseInt(formProd.precio) } : p));
+      setProductos(productos.map(p => p.id === editandoId ? { ...p, nombre: formProd.nombre, stock: parseInt(formProd.stock), precioCoste: parseInt(formProd.precioCoste), precio: parseInt(formProd.precio) } : p));
       setEditandoId(null);
     } else {
-      setProductos([...productos, { id: Date.now(), ...formProd, stock: parseInt(formProd.stock), precioCoste: parseInt(formProd.precioCoste), precio: parseInt(formProd.precio) }]);
+      setProductos([...productos, { id: Date.now(), nombre: formProd.nombre, stock: parseInt(formProd.stock), precioCoste: parseInt(formProd.precioCoste), precio: parseInt(formProd.precio) }]);
     }
     setFormProd({ nombre: '', stock: '', precioCoste: '', precio: '' });
   };
@@ -59,7 +59,7 @@ export default function App() {
     if (!ventaProdId || ventaCantidad < 1) return alert("Selecciona un producto y cantidad.");
     
     const productoInfo = productos.find(p => p.id === parseInt(ventaProdId));
-    if (productoInfo.stock < ventaCantidad) return alert('¡No hay stock suficiente!');
+    if (productoInfo.stock < ventaCantidad) return alert("¡No hay stock suficiente!");
 
     setProductos(productos.map(p => p.id === productoInfo.id ? { ...p, stock: p.stock - ventaCantidad } : p));
 
@@ -112,18 +112,16 @@ export default function App() {
     } : o));
   };
 
-  // --- NUEVO: ANULAR TRANSACCIÓN (ERROR) ---
+  // --- ANULAR TRANSACCIÓN (ERROR) ---
   const anularTransaccion = (id) => {
     if (window.confirm("¿Anular este registro? El stock volverá al inventario y se borrará del historial.")) {
       const ordenAAnular = ordenes.find(o => o.id === id);
       if (ordenAAnular) {
-        // Devolver el stock al producto correspondiente
         setProductos(prevProductos => prevProductos.map(p => 
           p.id === ordenAAnular.productoId 
             ? { ...p, stock: p.stock + ordenAAnular.cantidad } 
             : p
         ));
-        // Eliminar la orden
         setOrdenes(prevOrdenes => prevOrdenes.filter(o => o.id !== id));
       }
     }
@@ -132,7 +130,7 @@ export default function App() {
   // --- IMPORTAR / EXPORTAR ---
   const exportarCSV = () => {
     const encabezados = "ID,Fecha,Cliente,Producto,Cantidad,Estado,Total Cobrado,Costo\n";
-    const filas = ordenes.map(o => `${o.id},${o.fechaCorta},${o.cliente},${o.nombre},${o.cantidad},${o.estado},${o.total},${o.costo}`).join("\n");
+    const filas = ordenes.map(o => o.id + "," + o.fechaCorta + "," + o.cliente + "," + o.nombre + "," + o.cantidad + "," + o.estado + "," + o.total + "," + o.costo).join("\n");
     const blob = new Blob([encabezados + filas], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -198,8 +196,8 @@ export default function App() {
       </div>
 
       {/* Menú Lateral */}
-      <div className={`sidebar-overlay ${menuAbierto ? 'open' : ''}`} onClick={() => setMenuAbierto(false)}></div>
-      <div className={`sidebar ${menuAbierto ? 'open' : ''}`}>
+      <div className={"sidebar-overlay " + (menuAbierto ? "open" : "")} onClick={() => setMenuAbierto(false)}></div>
+      <div className={"sidebar " + (menuAbierto ? "open" : "")}>
         <h2 style={{marginTop: '20px', color: 'var(--primary)'}}>Opciones</h2>
         
         <button className="btn btn-primary" onClick={exportarCSV} style={{marginBottom: '10px'}}>Exportar CSV (Excel)</button>
@@ -313,11 +311,11 @@ export default function App() {
           <div>
             <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Por Gestionar</h3>
             
-            {ordenes.filter(o => ['pendiente', 'pagado_no_entregado'].includes(o.estado)).slice().reverse().map(o => (
+            {ordenes.filter(o => o.estado === 'pendiente' || o.estado === 'pagado_no_entregado').slice().reverse().map(o => (
               <div key={o.id} className="card" style={{border: o.estado === 'pendiente' ? '1px solid #fde68a' : '1px solid #bfdbfe', padding: '12px'}}>
                 <div className="flex-between">
                   <div>
-                    <span className={`badge ${o.estado === 'pendiente' ? 'badge-pending' : 'badge-paid'}`}>
+                    <span className={"badge " + (o.estado === 'pendiente' ? "badge-pending" : "badge-paid")}>
                       {o.estado === 'pendiente' ? 'PENDIENTE PAGO' : 'PAGADO - FALTA ENTREGAR'}
                     </span>
                     <div style={{fontWeight: 'bold', fontSize: '1.1rem', margin: '4px 0'}}>{o.cantidad}x {o.nombre}</div>
@@ -340,9 +338,9 @@ export default function App() {
                  <div style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>Dejado en: {o.cliente}</div>
                  
                  <div className="flex-gap" style={{marginTop: '10px', alignItems: 'center'}}>
-                    <input type="number" id={`cons_${o.id}`} placeholder="Cant." style={{width: '70px', padding: '8px'}} min="0" max={o.cantidad}/>
+                    <input type="number" id={"cons_" + o.id} placeholder="Cant." style={{width: '70px', padding: '8px'}} min="0" max={o.cantidad}/>
                     <button onClick={() => {
-                      const input = document.getElementById(`cons_${o.id}`);
+                      const input = document.getElementById("cons_" + o.id);
                       resolverConsignacion(o.id, parseInt(input.value || 0));
                     }} className="btn btn-purple btn-small">Liquidar</button>
                     <button onClick={() => anularTransaccion(o.id)} className="btn btn-danger btn-small">Anular</button>
@@ -350,7 +348,7 @@ export default function App() {
                </div>
             ))}
 
-            {ordenes.filter(o => ['pendiente', 'pagado_no_entregado', 'consignacion'].includes(o.estado)).length === 0 && (
+            {ordenes.filter(o => o.estado === 'pendiente' || o.estado === 'pagado_no_entregado' || o.estado === 'consignacion').length === 0 && (
               <div style={{textAlign: 'center', padding: '20px', color: 'var(--text-muted)'}}>Todo limpio.</div>
             )}
           </div>
@@ -387,4 +385,5 @@ export default function App() {
                     <span style={{display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)'}}>{o.cliente} • ${o.precioUnitarioCobrado} c/u</span>
                   </div>
                   <div style={{textAlign: 'right', marginRight: '10px'}}>
-                    <span style={{fontWeight: 'bold', color: '#059669', fontSize: '0.85rem'}}>+${o.total}</span>
+                    <span style={{fontWeight: 'bold', color: '#059669', fontSize: '0.85rem'}}>+ ${o.total}</span>
+   
