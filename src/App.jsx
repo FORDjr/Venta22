@@ -386,4 +386,27 @@ export default function App() {
                   </div>
                   <div style={{textAlign: 'right', marginRight: '10px'}}>
                     <span style={{fontWeight: 'bold', color: '#059669', fontSize: '0.85rem'}}>+ ${o.total}</span>
+                    <span style={{display: 'block', fontSize: '0.7rem', color: '#ef4444'}}>- ${o.costo}</span>
+                  </div>
+                  <button onClick={() => anularTransaccion(o.id)} className="btn btn-danger btn-small" style={{margin: 0}}>X</button>
+                </div>
+              ))}
+              {ventasValidas.length === 0 && (
+                <div style={{textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem'}}>No hay historial de ventas aún.</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <nav className="nav-bottom">
+        <button className={"nav-item " + (activeTab === 'productos' ? "active" : "")} onClick={() => setActiveTab('productos')}>Stock</button>
+        <button className={"nav-item " + (activeTab === 'ventas' ? "active" : "")} onClick={() => setActiveTab('ventas')}>Vender</button>
+        <button className={"nav-item " + (activeTab === 'ordenes' ? "active" : "")} onClick={() => setActiveTab('ordenes')}>Órdenes</button>
+        <button className={"nav-item " + (activeTab === 'estadisticas' ? "active" : "")} onClick={() => setActiveTab('estadisticas')}>Stats</button>
+      </nav>
+    </>
+  );
+}
+
    
