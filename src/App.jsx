@@ -49,7 +49,9 @@ export default function App() {
   };
 
   const borrarProducto = (id) => {
-    if (window.confirm("¿Borrar producto?")) setProductos(productos.filter(p => p.id !== id));
+    if (window.confirm("¿Seguro que deseas borrar este producto del inventario?")) {
+      setProductos(productos.filter(p => p.id !== id));
+    }
   };
 
   // --- LÓGICA VENTAS ---
@@ -110,6 +112,23 @@ export default function App() {
     } : o));
   };
 
+  // --- NUEVO: ANULAR TRANSACCIÓN (ERROR) ---
+  const anularTransaccion = (id) => {
+    if (window.confirm("¿Anular este registro? El stock volverá al inventario y se borrará del historial.")) {
+      const ordenAAnular = ordenes.find(o => o.id === id);
+      if (ordenAAnular) {
+        // Devolver el stock al producto correspondiente
+        setProductos(prevProductos => prevProductos.map(p => 
+          p.id === ordenAAnular.productoId 
+            ? { ...p, stock: p.stock + ordenAAnular.cantidad } 
+            : p
+        ));
+        // Eliminar la orden
+        setOrdenes(prevOrdenes => prevOrdenes.filter(o => o.id !== id));
+      }
+    }
+  };
+
   // --- IMPORTAR / EXPORTAR ---
   const exportarCSV = () => {
     const encabezados = "ID,Fecha,Cliente,Producto,Cantidad,Estado,Total Cobrado,Costo\n";
@@ -143,12 +162,12 @@ export default function App() {
           if (data.productos && data.ordenes) {
             setProductos(data.productos);
             setOrdenes(data.ordenes);
-            alert("Datos importados correctamente.");
+            alert("✅ Datos importados correctamente.");
           } else {
-            alert("El archivo no tiene el formato válido.");
+            alert("❌ El archivo no tiene el formato válido.");
           }
         } catch (error) {
-          alert("Error al leer el archivo JSON.");
+          alert("❌ Error al leer el archivo JSON.");
         }
       };
       reader.readAsText(file);
@@ -308,6 +327,7 @@ export default function App() {
                 <div className="flex-gap" style={{marginTop: '10px'}}>
                   {o.estado === 'pendiente' && <button onClick={() => cambiarEstadoOrden(o.id, 'pagado_no_entregado')} className="btn btn-info btn-small">Marcar Pagado</button>}
                   <button onClick={() => cambiarEstadoOrden(o.id, 'completada')} className="btn btn-success btn-small">Finalizar Todo</button>
+                  <button onClick={() => anularTransaccion(o.id)} className="btn btn-danger btn-small">Anular</button>
                 </div>
               </div>
             ))}
@@ -320,11 +340,12 @@ export default function App() {
                  <div style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>Dejado en: {o.cliente}</div>
                  
                  <div className="flex-gap" style={{marginTop: '10px', alignItems: 'center'}}>
-                    <input type="number" id={`cons_${o.id}`} placeholder="Cant. Vendida" style={{width: '100px', padding: '8px'}} min="0" max={o.cantidad}/>
+                    <input type="number" id={`cons_${o.id}`} placeholder="Cant." style={{width: '70px', padding: '8px'}} min="0" max={o.cantidad}/>
                     <button onClick={() => {
                       const input = document.getElementById(`cons_${o.id}`);
                       resolverConsignacion(o.id, parseInt(input.value || 0));
                     }} className="btn btn-purple btn-small">Liquidar</button>
+                    <button onClick={() => anularTransaccion(o.id)} className="btn btn-danger btn-small">Anular</button>
                  </div>
                </div>
             ))}
@@ -360,28 +381,10 @@ export default function App() {
             <div className="card">
               <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Historial Reciente</h3>
               {ventasValidas.slice().reverse().map(o => (
-                <div key={o.id} style={{borderBottom: '1px solid #f3f4f6', padding: '8px 0', display: 'flex', justifyContent: 'space-between'}}>
-                  <div>
+                <div key={o.id} style={{borderBottom: '1px solid #f3f4f6', padding: '12px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <div style={{flex: 1}}>
                     <span style={{fontWeight: '600', fontSize: '0.85rem'}}>{o.cantidad}x {o.nombre}</span>
                     <span style={{display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)'}}>{o.cliente} • ${o.precioUnitarioCobrado} c/u</span>
                   </div>
-                  <div style={{textAlign: 'right'}}>
+                  <div style={{textAlign: 'right', marginRight: '10px'}}>
                     <span style={{fontWeight: 'bold', color: '#059669', fontSize: '0.85rem'}}>+${o.total}</span>
-                    <span style={{display: 'block', fontSize: '0.7rem', color: '#ef4444'}}>-${o.costo}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <nav className="nav-bottom">
-        <button className={`nav-item ${activeTab === 'productos' ? 'active' : ''}`} onClick={() => setActiveTab('productos')}>Stock</button>
-        <button className={`nav-item ${activeTab === 'ventas' ? 'active' : ''}`} onClick={() => setActiveTab('ventas')}>Vender</button>
-        <button className={`nav-item ${activeTab === 'ordenes' ? 'active' : ''}`} onClick={() => setActiveTab('ordenes')}>Órdenes</button>
-        <button className={`nav-item ${activeTab === 'estadisticas' ? 'active' : ''}`} onClick={() => setActiveTab('estadisticas')}>Stats</button>
-      </nav>
-    </>
-  );
-}
