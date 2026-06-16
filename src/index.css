@@ -1,143 +1,141 @@
 :root {
-      --primary: #e11d48;
-        --bg: #f3f4f6;
-          --surface: #ffffff;
-            --text: #1f2937;
-              --text-muted: #6b7280;
-              }
-
-              body {
-                margin: 0;
-                  background-color: var(--bg);
-                    color: var(--text);
-                      font-family: system-ui, -apple-system, sans-serif;
-                        padding-bottom: 80px;
-                          -webkit-tap-highlight-color: transparent;
-                          }
-
-                          .header {
-                            background: var(--primary);
-                              color: white;
-                                padding: 24px 20px 30px;
-                                  text-align: center;
-                                    font-size: 1.5rem;
-                                      font-weight: 800;
-                                        border-bottom-left-radius: 24px;
-                                          border-bottom-right-radius: 24px;
-                                            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
-                                            }
-
-                                            .container {
-                                              padding: 0 16px;
-                                                max-width: 500px;
-                                                  margin: -15px auto 0;
-                                                  }
-
-                                                  .card {
-                                                    background: var(--surface);
-                                                      border-radius: 16px;
-                                                        padding: 20px;
-                                                          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                                                            margin-bottom: 16px;
-                                                            }
-
-                                                            .card-title {
-                                                              font-size: 1.1rem;
-                                                                font-weight: 700;
-                                                                  margin: 0 0 16px 0;
-                                                                    color: var(--text);
-                                                                    }
-
-                                                                    .input-group {
-                                                                      margin-bottom: 12px;
-                                                                      }
-
-                                                                      .input-group label {
-                                                                        display: block;
-                                                                          font-size: 0.8rem;
-                                                                            font-weight: 600;
-                                                                              color: var(--text-muted);
-                                                                                margin-bottom: 4px;
-                                                                                  text-transform: uppercase;
-                                                                                  }
-
-                                                                                  input, select {
-                                                                                    width: 100%;
-                                                                                      padding: 14px;
-                                                                                        border: 1.5px solid #e5e7eb;
-                                                                                          border-radius: 12px;
-                                                                                            font-size: 16px;
-                                                                                              background: #f9fafb;
-                                                                                                box-sizing: border-box;
-                                                                                                }
-
-                                                                                                input:focus, select:focus {
-                                                                                                  outline: none;
-                                                                                                    border-color: var(--primary);
-                                                                                                      background: var(--surface);
-                                                                                                      }
-
-                                                                                                      .btn {
-                                                                                                        width: 100%;
-                                                                                                          padding: 16px;
-                                                                                                            border: none;
-                                                                                                              border-radius: 12px;
-                                                                                                                font-size: 1rem;
-                                                                                                                  font-weight: 700;
-                                                                                                                    cursor: pointer;
-                                                                                                                      margin-top: 8px;
-                                                                                                                      }
-
-                                                                                                                      .btn-primary { background: var(--text); color: white; }
-                                                                                                                      .btn-success { background: #10b981; color: white; }
-                                                                                                                      .btn-warning { background: #f59e0b; color: white; }
-
-                                                                                                                      .flex-between {
-                                                                                                                        display: flex;
-                                                                                                                          justify-content: space-between;
-                                                                                                                            align-items: center;
-                                                                                                                            }
-
-                                                                                                                            .gap-2 { gap: 8px; display: flex; }
-
-                                                                                                                            .badge {
-                                                                                                                              padding: 6px 12px;
-                                                                                                                                border-radius: 20px;
-                                                                                                                                  font-size: 0.75rem;
-                                                                                                                                    font-weight: 800;
-                                                                                                                                    }
-                                                                                                                                    .badge-pending { background: #fef3c7; color: #d97706; }
-
-                                                                                                                                    .nav-bottom {
-                                                                                                                                      position: fixed;
-                                                                                                                                        bottom: 0;
-                                                                                                                                          left: 0;
-                                                                                                                                            width: 100%;
-                                                                                                                                              background: var(--surface);
-                                                                                                                                                display: flex;
-                                                                                                                                                  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
-                                                                                                                                                    padding-bottom: env(safe-area-inset-bottom);
-                                                                                                                                                      z-index: 1000;
-                                                                                                                                                      }
-
-                                                                                                                                                      .nav-item {
-                                                                                                                                                        flex: 1;
-                                                                                                                                                          padding: 16px 0;
-                                                                                                                                                            text-align: center;
-                                                                                                                                                              font-weight: 600;
-                                                                                                                                                                font-size: 0.9rem;
-                                                                                                                                                                  color: var(--text-muted);
-                                                                                                                                                                    border: none;
-                                                                                                                                                                      background: none;
-                                                                                                                                                                        cursor: pointer;
-                                                                                                                                                                          border-top: 3px solid transparent;
-                                                                                                                                                                          }
-
-                                                                                                                                                                          .nav-item.active {
-                                                                                                                                                                            color: var(--primary);
-                                                                                                                                                                              border-top: 3px solid var(--primary);
-                                                                                                                                                                              }
-
-                                                                                                                                                                              .item-list { border-left: 4px solid var(--primary); padding-left: 12px; }
-                                                                                                                                                                              
+  --primary: #e11d48;
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --text-muted: #6b7280;
 }
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  padding-bottom: 80px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header {
+  background: var(--primary);
+  color: white;
+  padding: 24px 20px 30px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+}
+
+.container {
+  padding: 0 16px;
+  max-width: 500px;
+  margin: -15px auto 0;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: var(--text);
+}
+
+.input-group {
+  margin-bottom: 12px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+input, select {
+  width: 100%;
+  padding: 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #f9fafb;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+.btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.btn-primary { background: var(--text); color: white; }
+.btn-success { background: #10b981; color: white; }
+.btn-warning { background: #f59e0b; color: white; }
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gap-2 { gap: 8px; display: flex; }
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.badge-pending { background: #fef3c7; color: #d97706; }
+
+.nav-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--surface);
+  display: flex;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 1000;
+}
+
+.nav-item {
+  flex: 1;
+  padding: 16px 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-top: 3px solid transparent;
+}
+
+.nav-item.active {
+  color: var(--primary);
+  border-top: 3px solid var(--primary);
+}
+
+.item-list { border-left: 4px solid var(--primary); padding-left: 12px; }
