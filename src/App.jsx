@@ -34,10 +34,10 @@ export default function App() {
   const guardarProducto = (e) => {
     e.preventDefault();
     if (editandoId) {
-      setProductos(productos.map(p => p.id === editandoId ? { ...p, nombre: formProd.nombre, stock: parseInt(formProd.stock), precioCoste: parseInt(formProd.precioCoste), precio: parseInt(formProd.precio) } : p));
+      setProductos(productos.map(p => p.id === editandoId ? { ...p, nombre: formProd.nombre, stock: parseInt(formProd.stock, 10), precioCoste: parseInt(formProd.precioCoste, 10), precio: parseInt(formProd.precio, 10) } : p));
       setEditandoId(null);
     } else {
-      setProductos([...productos, { id: Date.now(), nombre: formProd.nombre, stock: parseInt(formProd.stock), precioCoste: parseInt(formProd.precioCoste), precio: parseInt(formProd.precio) }]);
+      setProductos([...productos, { id: Date.now(), nombre: formProd.nombre, stock: parseInt(formProd.stock, 10), precioCoste: parseInt(formProd.precioCoste, 10), precio: parseInt(formProd.precio, 10) }]);
     }
     setFormProd({ nombre: '', stock: '', precioCoste: '', precio: '' });
   };
@@ -56,22 +56,24 @@ export default function App() {
 
   // --- LÓGICA VENTAS ---
   const registrarTransaccion = (estado, esConsignacion = false) => {
-    if (!ventaProdId || ventaCantidad < 1) return alert("Selecciona un producto y cantidad.");
+    const cant = parseInt(ventaCantidad, 10);
+    if (!ventaProdId || isNaN(cant) || cant < 1) return alert("Selecciona un producto y cantidad.");
     
-    const productoInfo = productos.find(p => p.id === parseInt(ventaProdId));
-    if (productoInfo.stock < ventaCantidad) return alert("¡No hay stock suficiente!");
+    const productoInfo = productos.find(p => p.id === parseInt(ventaProdId, 10));
+    if (!productoInfo || parseInt(productoInfo.stock, 10) < cant) return alert("¡No hay stock suficiente!");
 
-    setProductos(productos.map(p => p.id === productoInfo.id ? { ...p, stock: p.stock - ventaCantidad } : p));
+    // Restar stock matemáticamente
+    setProductos(productos.map(p => p.id === productoInfo.id ? { ...p, stock: parseInt(p.stock, 10) - cant } : p));
 
-    const precioFinal = ventaPrecioOp !== '' ? parseInt(ventaPrecioOp) : productoInfo.precio;
-    const montoTotal = ventaCantidad * precioFinal;
-    const costoTotal = ventaCantidad * productoInfo.precioCoste;
+    const precioFinal = ventaPrecioOp !== '' ? parseInt(ventaPrecioOp, 10) : parseInt(productoInfo.precio, 10);
+    const montoTotal = cant * precioFinal;
+    const costoTotal = cant * parseInt(productoInfo.precioCoste, 10);
 
     const nuevaOrden = {
       id: Date.now(),
       productoId: productoInfo.id,
       nombre: productoInfo.nombre,
-      cantidad: ventaCantidad,
+      cantidad: cant,
       precioUnitarioCobrado: precioFinal,
       total: montoTotal,
       costo: costoTotal,
@@ -92,23 +94,24 @@ export default function App() {
   };
 
   const resolverConsignacion = (id, cantidadVendida) => {
+    const cant = parseInt(cantidadVendida, 10);
     const orden = ordenes.find(o => o.id === id);
-    if(cantidadVendida < 0 || cantidadVendida > orden.cantidad) return alert("Cantidad inválida");
+    if(isNaN(cant) || cant < 0 || cant > parseInt(orden.cantidad, 10)) return alert("Cantidad inválida");
 
-    const stockSobrante = orden.cantidad - cantidadVendida;
+    const stockSobrante = parseInt(orden.cantidad, 10) - cant;
     if(stockSobrante > 0) {
-      setProductos(productos.map(p => p.id === orden.productoId ? { ...p, stock: p.stock + stockSobrante } : p));
+      setProductos(productos.map(p => p.id === orden.productoId ? { ...p, stock: parseInt(p.stock, 10) + stockSobrante } : p));
     }
 
-    const nuevoTotal = cantidadVendida * orden.precioUnitarioCobrado;
-    const nuevoCosto = cantidadVendida * (orden.costo / orden.cantidad);
+    const nuevoTotal = cant * parseInt(orden.precioUnitarioCobrado, 10);
+    const nuevoCosto = cant * (parseInt(orden.costo, 10) / parseInt(orden.cantidad, 10));
 
     setOrdenes(ordenes.map(o => o.id === id ? { 
       ...o, 
-      cantidad: cantidadVendida, 
+      cantidad: cant, 
       total: nuevoTotal, 
       costo: nuevoCosto,
-      estado: cantidadVendida > 0 ? 'completada' : 'cancelada' 
+      estado: cant > 0 ? 'completada' : 'cancelada' 
     } : o));
   };
 
@@ -117,9 +120,10 @@ export default function App() {
     if (window.confirm("¿Anular este registro? El stock volverá al inventario y se borrará del historial.")) {
       const ordenAAnular = ordenes.find(o => o.id === id);
       if (ordenAAnular) {
+        // Devolver el stock matemáticamente
         setProductos(prevProductos => prevProductos.map(p => 
           p.id === ordenAAnular.productoId 
-            ? { ...p, stock: p.stock + ordenAAnular.cantidad } 
+            ? { ...p, stock: parseInt(p.stock, 10) + parseInt(ordenAAnular.cantidad, 10) } 
             : p
         ));
         setOrdenes(prevOrdenes => prevOrdenes.filter(o => o.id !== id));
@@ -176,17 +180,16 @@ export default function App() {
 
   // --- STATS ---
   const ventasValidas = ordenes.filter(o => o.estado === 'completada');
-  const gananciaBruta = ventasValidas.reduce((acc, o) => acc + o.total, 0);
-  const costosDeVentas = ventasValidas.reduce((acc, o) => acc + o.costo, 0);
+  const gananciaBruta = ventasValidas.reduce((acc, o) => acc + parseInt(o.total, 10), 0);
+  const costosDeVentas = ventasValidas.reduce((acc, o) => acc + parseInt(o.costo, 10), 0);
   const gananciaLimpia = gananciaBruta - costosDeVentas;
   const cantVentas = ventasValidas.length;
   
-  const costoStockActual = productos.reduce((acc, p) => acc + (p.stock * p.precioCoste), 0);
-  const costoOrdenesPendientes = ordenes.filter(o => o.estado !== 'completada' && o.estado !== 'cancelada').reduce((acc, o) => acc + o.costo, 0);
+  const costoStockActual = productos.reduce((acc, p) => acc + (parseInt(p.stock, 10) * parseInt(p.precioCoste, 10)), 0);
+  const costoOrdenesPendientes = ordenes.filter(o => o.estado !== 'completada' && o.estado !== 'cancelada').reduce((acc, o) => acc + parseInt(o.costo, 10), 0);
   const totalGastado = costoStockActual + costoOrdenesPendientes + costosDeVentas;
 
   const productosFiltrados = productos.filter(p => p.nombre.toLowerCase().includes(busquedaProd.toLowerCase()));
-
   return (
     <>
       <div className="header">
@@ -273,7 +276,7 @@ export default function App() {
               <input type="text" placeholder="Escribe para buscar..." value={busquedaProd} onChange={e => setBusquedaProd(e.target.value)} style={{marginBottom: '8px'}}/>
               <select value={ventaProdId} onChange={e => setVentaProdId(e.target.value)}>
                 <option value="">Selecciona...</option>
-                {productosFiltrados.filter(p => p.stock > 0).map(p => (
+                {productosFiltrados.filter(p => parseInt(p.stock, 10) > 0).map(p => (
                   <option key={p.id} value={p.id}>{p.nombre} (Disp: {p.stock})</option>
                 ))}
               </select>
@@ -379,16 +382,16 @@ export default function App() {
             <div className="card">
               <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Historial Reciente</h3>
               {ventasValidas.slice().reverse().map(o => (
-                <div key={o.id} style={{borderBottom: '1px solid #f3f4f6', padding: '12px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                  <div style={{flex: 1}}>
-                    <span style={{fontWeight: '600', fontSize: '0.85rem'}}>{o.cantidad}x {o.nombre}</span>
-                    <span style={{display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)'}}>{o.cliente} • ${o.precioUnitarioCobrado} c/u</span>
+                <div key={o.id} style={{borderBottom: '1px solid #f3f4f6', padding: '12px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px'}}>
+                  <div style={{flex: 1, minWidth: 0}}>
+                    <span style={{fontWeight: '600', fontSize: '0.85rem', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{o.cantidad}x {o.nombre}</span>
+                    <span style={{display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{o.cliente} • ${o.precioUnitarioCobrado} c/u</span>
                   </div>
-                  <div style={{textAlign: 'right', marginRight: '10px'}}>
-                    <span style={{fontWeight: 'bold', color: '#059669', fontSize: '0.85rem'}}>+ ${o.total}</span>
+                  <div style={{textAlign: 'right', whiteSpace: 'nowrap'}}>
+                    <span style={{fontWeight: 'bold', color: '#059669', fontSize: '0.85rem', display: 'block'}}>+ ${o.total}</span>
                     <span style={{display: 'block', fontSize: '0.7rem', color: '#ef4444'}}>- ${o.costo}</span>
                   </div>
-                  <button onClick={() => anularTransaccion(o.id)} className="btn btn-danger btn-small" style={{margin: 0}}>X</button>
+                  <button onClick={() => anularTransaccion(o.id)} style={{background: 'var(--danger)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 'bold', flexShrink: 0, margin: 0}}>X</button>
                 </div>
               ))}
               {ventasValidas.length === 0 && (
@@ -409,4 +412,3 @@ export default function App() {
   );
 }
 
-   
