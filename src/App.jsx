@@ -143,17 +143,17 @@ export default function App() {
           if (data.productos && data.ordenes) {
             setProductos(data.productos);
             setOrdenes(data.ordenes);
-            alert("✅ Datos importados correctamente.");
+            alert("Datos importados correctamente.");
           } else {
-            alert("❌ El archivo no tiene el formato válido.");
+            alert("El archivo no tiene el formato válido.");
           }
         } catch (error) {
-          alert("❌ Error al leer el archivo JSON.");
+          alert("Error al leer el archivo JSON.");
         }
       };
       reader.readAsText(file);
     }
-    event.target.value = null; // Reset input
+    event.target.value = null;
     setMenuAbierto(false);
   };
 
@@ -190,7 +190,7 @@ export default function App() {
         <input type="file" ref={fileInputRef} style={{display: 'none'}} accept=".json" onChange={importarJSON} />
         <button className="btn btn-outline" onClick={() => fileInputRef.current.click()}>Importar Backup (JSON)</button>
         
-        <p style={{fontSize: '0.8rem', color: 'gray', marginTop: '20px'}}>El CSV es ideal para ver en hojas de cálculo[span_0](start_span)[span_0](end_span). El JSON sirve para recuperar la app y el inventario en otro dispositivo[span_1](start_span)[span_1](end_span).</p>
+        <p style={{fontSize: '0.8rem', color: 'gray', marginTop: '20px'}}>El CSV es ideal para ver en hojas de cálculo. El JSON sirve para recuperar la app y el inventario en otro dispositivo.</p>
       </div>
 
       <div className="container">
@@ -227,7 +227,6 @@ export default function App() {
             </div>
 
             <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginTop: '20px'}}>Stock ({productos.length})</h3>
-            {/* Lista invertida para mostrar el producto más reciente creado arriba */}
             {productos.slice().reverse().map(p => (
               <div key={p.id} className="card item-list flex-between" style={{padding: '12px'}}>
                 <div>
@@ -295,7 +294,6 @@ export default function App() {
           <div>
             <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Por Gestionar</h3>
             
-            {/* Lista invertida para mostrar la orden pendiente más reciente arriba */}
             {ordenes.filter(o => ['pendiente', 'pagado_no_entregado'].includes(o.estado)).slice().reverse().map(o => (
               <div key={o.id} className="card" style={{border: o.estado === 'pendiente' ? '1px solid #fde68a' : '1px solid #bfdbfe', padding: '12px'}}>
                 <div className="flex-between">
@@ -315,7 +313,6 @@ export default function App() {
             ))}
 
             <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginTop: '20px', marginBottom: '10px'}}>Consignaciones Activas</h3>
-            {/* Lista invertida para consignaciones */}
             {ordenes.filter(o => o.estado === 'consignacion').slice().reverse().map(o => (
                <div key={o.id} className="card" style={{border: '1px solid #e9d5ff', padding: '12px'}}>
                  <span className="badge badge-consignment">CONSIGNACIÓN</span>
@@ -362,7 +359,6 @@ export default function App() {
 
             <div className="card">
               <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Historial Reciente</h3>
-              {/* Lista invertida: las últimas ventas aparecen de primero */}
               {ventasValidas.slice().reverse().map(o => (
                 <div key={o.id} style={{borderBottom: '1px solid #f3f4f6', padding: '8px 0', display: 'flex', justifyContent: 'space-between'}}>
                   <div>
@@ -383,4 +379,9 @@ export default function App() {
       <nav className="nav-bottom">
         <button className={`nav-item ${activeTab === 'productos' ? 'active' : ''}`} onClick={() => setActiveTab('productos')}>Stock</button>
         <button className={`nav-item ${activeTab === 'ventas' ? 'active' : ''}`} onClick={() => setActiveTab('ventas')}>Vender</button>
-        <button className={`nav-item ${activeTab === 
+        <button className={`nav-item ${activeTab === 'ordenes' ? 'active' : ''}`} onClick={() => setActiveTab('ordenes')}>Órdenes</button>
+        <button className={`nav-item ${activeTab === 'estadisticas' ? 'active' : ''}`} onClick={() => setActiveTab('estadisticas')}>Stats</button>
+      </nav>
+    </>
+  );
+}
