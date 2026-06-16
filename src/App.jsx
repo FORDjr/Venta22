@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('ventas');
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const fileInputRef = useRef(null);
   
   // DATOS
   const [productos, setProductos] = useState(() => {
@@ -72,7 +73,7 @@ export default function App() {
       precioUnitarioCobrado: precioFinal,
       total: montoTotal,
       costo: costoTotal,
-      estado: estado, // 'completada', 'pendiente', 'pagado_no_entregado', 'consignacion'
+      estado: estado, 
       cliente: ventaCliente || 'Sin nombre',
       fecha: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
       fechaCorta: new Date().toLocaleDateString('es-CL')
@@ -81,7 +82,7 @@ export default function App() {
     setOrdenes([...ordenes, nuevaOrden]);
     
     setVentaProdId(''); setVentaCantidad(1); setVentaPrecioOp(''); setVentaCliente(''); setBusquedaProd('');
-    setActiveTab(esConsignacion ? 'consignaciones' : 'ordenes');
+    setActiveTab(esConsignacion ? 'ordenes' : 'ordenes');
   };
 
   const cambiarEstadoOrden = (id, nuevoEstado) => {
@@ -92,13 +93,11 @@ export default function App() {
     const orden = ordenes.find(o => o.id === id);
     if(cantidadVendida < 0 || cantidadVendida > orden.cantidad) return alert("Cantidad inválida");
 
-    // Devolver stock no vendido
     const stockSobrante = orden.cantidad - cantidadVendida;
     if(stockSobrante > 0) {
       setProductos(productos.map(p => p.id === orden.productoId ? { ...p, stock: p.stock + stockSobrante } : p));
     }
 
-    // Actualizar orden como completada con la nueva cantidad
     const nuevoTotal = cantidadVendida * orden.precioUnitarioCobrado;
     const nuevoCosto = cantidadVendida * (orden.costo / orden.cantidad);
 
@@ -111,7 +110,7 @@ export default function App() {
     } : o));
   };
 
-  // --- EXPORTAR ---
+  // --- IMPORTAR / EXPORTAR ---
   const exportarCSV = () => {
     const encabezados = "ID,Fecha,Cliente,Producto,Cantidad,Estado,Total Cobrado,Costo\n";
     const filas = ordenes.map(o => `${o.id},${o.fechaCorta},${o.cliente},${o.nombre},${o.cantidad},${o.estado},${o.total},${o.costo}`).join("\n");
@@ -132,6 +131,32 @@ export default function App() {
     setMenuAbierto(false);
   };
 
+  const importarJSON = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (window.confirm("Importar un respaldo reemplazará los datos actuales. ¿Deseas continuar?")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.productos && data.ordenes) {
+            setProductos(data.productos);
+            setOrdenes(data.ordenes);
+            alert("✅ Datos importados correctamente.");
+          } else {
+            alert("❌ El archivo no tiene el formato válido.");
+          }
+        } catch (error) {
+          alert("❌ Error al leer el archivo JSON.");
+        }
+      };
+      reader.readAsText(file);
+    }
+    event.target.value = null; // Reset input
+    setMenuAbierto(false);
+  };
+
   // --- STATS ---
   const ventasValidas = ordenes.filter(o => o.estado === 'completada');
   const gananciaBruta = ventasValidas.reduce((acc, o) => acc + o.total, 0);
@@ -143,7 +168,6 @@ export default function App() {
   const costoOrdenesPendientes = ordenes.filter(o => o.estado !== 'completada' && o.estado !== 'cancelada').reduce((acc, o) => acc + o.costo, 0);
   const totalGastado = costoStockActual + costoOrdenesPendientes + costosDeVentas;
 
-  // Filtrado buscador
   const productosFiltrados = productos.filter(p => p.nombre.toLowerCase().includes(busquedaProd.toLowerCase()));
 
   return (
@@ -151,16 +175,22 @@ export default function App() {
       <div className="header">
         <button className="menu-btn" onClick={() => setMenuAbierto(true)}>☰</button>
         <span>Gestor de Ventas</span>
-        <div style={{width: '30px'}}></div> {/* Espaciador */}
+        <div style={{width: '30px'}}></div>
       </div>
 
       {/* Menú Lateral */}
       <div className={`sidebar-overlay ${menuAbierto ? 'open' : ''}`} onClick={() => setMenuAbierto(false)}></div>
       <div className={`sidebar ${menuAbierto ? 'open' : ''}`}>
         <h2 style={{marginTop: '20px', color: 'var(--primary)'}}>Opciones</h2>
-        <button className="btn btn-primary" onClick={exportarCSV} style={{marginBottom: '10px'}}>Exportar a CSV (Excel/Sheets)</button>
-        <button className="btn btn-primary" onClick={exportarJSON}>Respaldar Todo (JSON)</button>
-        <p style={{fontSize: '0.8rem', color: 'gray', marginTop: '20px'}}>El CSV es ideal para ver en Google Sheets. El JSON sirve para recuperar la app en otro celular.</p>
+        
+        <button className="btn btn-primary" onClick={exportarCSV} style={{marginBottom: '10px'}}>Exportar CSV (Excel)</button>
+        <button className="btn btn-primary" onClick={exportarJSON} style={{marginBottom: '30px'}}>Respaldar Datos (JSON)</button>
+        
+        <h3 style={{fontSize: '1rem', color: 'var(--text)'}}>Restaurar Sistema</h3>
+        <input type="file" ref={fileInputRef} style={{display: 'none'}} accept=".json" onChange={importarJSON} />
+        <button className="btn btn-outline" onClick={() => fileInputRef.current.click()}>Importar Backup (JSON)</button>
+        
+        <p style={{fontSize: '0.8rem', color: 'gray', marginTop: '20px'}}>El CSV es ideal para ver en hojas de cálculo[span_0](start_span)[span_0](end_span). El JSON sirve para recuperar la app y el inventario en otro dispositivo[span_1](start_span)[span_1](end_span).</p>
       </div>
 
       <div className="container">
@@ -197,7 +227,8 @@ export default function App() {
             </div>
 
             <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginTop: '20px'}}>Stock ({productos.length})</h3>
-            {productos.map(p => (
+            {/* Lista invertida para mostrar el producto más reciente creado arriba */}
+            {productos.slice().reverse().map(p => (
               <div key={p.id} className="card item-list flex-between" style={{padding: '12px'}}>
                 <div>
                   <div style={{fontWeight: 'bold'}}>{p.nombre}</div>
@@ -259,12 +290,13 @@ export default function App() {
           </div>
         )}
 
-        {/* VISTA ÓRDENES (Ahora incluye consignaciones en la misma vista o puedes separarlo) */}
+        {/* VISTA ÓRDENES */}
         {activeTab === 'ordenes' && (
           <div>
             <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Por Gestionar</h3>
             
-            {ordenes.filter(o => ['pendiente', 'pagado_no_entregado'].includes(o.estado)).map(o => (
+            {/* Lista invertida para mostrar la orden pendiente más reciente arriba */}
+            {ordenes.filter(o => ['pendiente', 'pagado_no_entregado'].includes(o.estado)).slice().reverse().map(o => (
               <div key={o.id} className="card" style={{border: o.estado === 'pendiente' ? '1px solid #fde68a' : '1px solid #bfdbfe', padding: '12px'}}>
                 <div className="flex-between">
                   <div>
@@ -283,7 +315,8 @@ export default function App() {
             ))}
 
             <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginTop: '20px', marginBottom: '10px'}}>Consignaciones Activas</h3>
-            {ordenes.filter(o => o.estado === 'consignacion').map(o => (
+            {/* Lista invertida para consignaciones */}
+            {ordenes.filter(o => o.estado === 'consignacion').slice().reverse().map(o => (
                <div key={o.id} className="card" style={{border: '1px solid #e9d5ff', padding: '12px'}}>
                  <span className="badge badge-consignment">CONSIGNACIÓN</span>
                  <div style={{fontWeight: 'bold', fontSize: '1.1rem', margin: '4px 0'}}>{o.cantidad}x {o.nombre}</div>
@@ -328,7 +361,8 @@ export default function App() {
             </div>
 
             <div className="card">
-              <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Historial</h3>
+              <h3 style={{color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '10px'}}>Historial Reciente</h3>
+              {/* Lista invertida: las últimas ventas aparecen de primero */}
               {ventasValidas.slice().reverse().map(o => (
                 <div key={o.id} style={{borderBottom: '1px solid #f3f4f6', padding: '8px 0', display: 'flex', justifyContent: 'space-between'}}>
                   <div>
@@ -349,9 +383,4 @@ export default function App() {
       <nav className="nav-bottom">
         <button className={`nav-item ${activeTab === 'productos' ? 'active' : ''}`} onClick={() => setActiveTab('productos')}>Stock</button>
         <button className={`nav-item ${activeTab === 'ventas' ? 'active' : ''}`} onClick={() => setActiveTab('ventas')}>Vender</button>
-        <button className={`nav-item ${activeTab === 'ordenes' ? 'active' : ''}`} onClick={() => setActiveTab('ordenes')}>Órdenes</button>
-        <button className={`nav-item ${activeTab === 'estadisticas' ? 'active' : ''}`} onClick={() => setActiveTab('estadisticas')}>Stats</button>
-      </nav>
-    </>
-  );
-}
+        <button className={`nav-item ${activeTab === 
