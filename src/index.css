@@ -4,6 +4,8 @@
   --surface: #ffffff;
   --text: #1f2937;
   --text-muted: #6b7280;
+  --danger: #ef4444;
+  --info: #3b82f6;
 }
 
 body {
@@ -86,19 +88,19 @@ input:focus, select:focus {
   font-weight: 700;
   cursor: pointer;
   margin-top: 8px;
+  color: white;
 }
 
-.btn-primary { background: var(--text); color: white; }
-.btn-success { background: #10b981; color: white; }
-.btn-warning { background: #f59e0b; color: white; }
+.btn-primary { background: var(--text); }
+.btn-success { background: #10b981; }
+.btn-warning { background: #f59e0b; }
+.btn-info { background: var(--info); }
+.btn-danger { background: var(--danger); padding: 8px 12px; font-size: 0.85rem; }
 
-.flex-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.btn-small { padding: 8px 12px; font-size: 0.85rem; border-radius: 8px; }
 
-.gap-2 { gap: 8px; display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-gap { display: flex; gap: 8px; }
 
 .badge {
   padding: 6px 12px;
@@ -108,6 +110,7 @@ input:focus, select:focus {
 }
 .badge-pending { background: #fef3c7; color: #d97706; }
 
+/* Navegación inferior ajustada para 4 ítems */
 .nav-bottom {
   position: fixed;
   bottom: 0;
@@ -122,15 +125,16 @@ input:focus, select:focus {
 
 .nav-item {
   flex: 1;
-  padding: 16px 0;
+  padding: 14px 0;
   text-align: center;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.75rem; /* Letra más chica para que entren 4 */
   color: var(--text-muted);
   border: none;
   background: none;
   cursor: pointer;
   border-top: 3px solid transparent;
+  text-transform: uppercase;
 }
 
 .nav-item.active {
@@ -139,3 +143,14 @@ input:focus, select:focus {
 }
 
 .item-list { border-left: 4px solid var(--primary); padding-left: 12px; }
+
+/* Estilos de Estadísticas */
+.stat-box {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+.stat-value { font-size: 1.4rem; font-weight: 900; color: var(--text); }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
